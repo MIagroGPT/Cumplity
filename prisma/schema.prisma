@@ -1,0 +1,123 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Consultant {
+  id             String      @id @default(uuid())
+  fullName       String
+  licenseNumber  String      @unique
+  email          String      @unique
+  password       String      @default("cumplity123")
+  createdAt      DateTime    @default(now())
+  companies      Company[]
+
+  @@map("consultants")
+}
+
+model Company {
+  id                  String               @id @default(uuid())
+  consultantId        String
+  consultant          Consultant           @relation(fields: [consultantId], references: [id], onDelete: Restrict)
+  companyName         String
+  nit                 String               @unique
+  arlRiskLevel        Int                  // 1 a 5
+  workerCount         Int                  @default(1)
+  requiredStandards   Int                  // 7, 21, 60
+  economicSector      String?
+  createdAt           DateTime             @default(now())
+  workers             Worker[]
+  standardEvaluations StandardEvaluation[]
+  gtc45Findings       Gtc45Finding[]
+  vaultDocuments      VaultDocument[]
+  accidentAlerts      AccidentInvestigation[]
+
+  @@map("companies")
+}
+
+model Worker {
+  id             String            @id @default(uuid())
+  companyId      String
+  company        Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  fullName       String
+  documentNumber String
+  jobPosition    String
+  isActive       Boolean           @default(true)
+  medicalExamDate DateTime?
+  createdAt      DateTime          @default(now())
+  documents      VaultDocument[]
+  accidents      AccidentInvestigation[]
+
+  @@unique([companyId, documentNumber])
+  @@map("workers")
+}
+
+model StandardEvaluation {
+  id            String   @id @default(uuid())
+  companyId     String
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  standardCode  String
+  standardTitle String
+  cyclePhase    String   @default("PLANEAR") // PLANEAR, HACER, VERIFICAR, ACTUAR
+  weightPercent Float    @default(0)
+  status        String   @default("NO_CUMPLE") // CUMPLE, NO_CUMPLE, NO_APLICA
+  evidenceUrl   String?
+  notes         String?
+  updatedAt     DateTime @default(now()) @updatedAt
+
+  @@map("standard_evaluations")
+}
+
+model Gtc45Finding {
+  id                String   @id @default(uuid())
+  companyId         String
+  company           Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  zoneArea          String?
+  riskType          String?  // Físico, Químico, Biológico, Biomecánico, Psicosocial, etc.
+  dangerDescription String?
+  deficiencyLevel   Int?     // ND: 0, 2, 6, 10
+  exposureLevel     Int?     // NE: 1, 2, 3, 4
+  riskLevel         Int?     // NR
+  controlMeasure    String?
+  audioTranscript   String?
+  status            String   @default("OPEN") // OPEN, IN_PROGRESS, CLOSED
+  createdAt         DateTime @default(now())
+
+  @@map("GTC45_findings")
+}
+
+model VaultDocument {
+  id             String   @id @default(uuid())
+  companyId      String
+  company        Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  workerId       String?
+  worker         Worker?  @relation(fields: [workerId], references: [id], onDelete: SetNull)
+  documentType   String   // EXAMEN_MEDICO, CAPACITACION, INVESTIGACION_ACCIDENTE, MATRIZ_LEGAL, etc.
+  fileName       String
+  fileUrl        String
+  retentionYears Int      @default(20)
+  uploadedAt     DateTime @default(now())
+  expiresAt      DateTime
+
+  @@map("vault_documents")
+}
+
+model AccidentInvestigation {
+  id            String   @id @default(uuid())
+  companyId     String
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  workerId      String?
+  worker        Worker?  @relation(fields: [workerId], references: [id], onDelete: SetNull)
+  eventDate     DateTime
+  severity      String   // GRAVE, MORTAL, LEVE
+  legalDeadline DateTime // 15 días hábiles según Res. 1401/2007
+  status        String   @default("PENDIENTE") // PENDIENTE, ENVIADO_ARL, CERRADO
+  description   String
+  createdAt     DateTime @default(now())
+
+  @@map("accident_investigations")
+}

@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  # 1. Aplicación Web Cumplity AI (Next.js)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cumplity_app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://cumplity_user:cumplity_secure_pass_2026@postgres:5432/cumplity_db?schema=public
+      - NODE_ENV=production
+      - NEXT_PUBLIC_APP_NAME=Cumplity AI
+    depends_on:
+      - postgres
+
+  # 2. Base de Datos Relacional PostgreSQL (Producción)
+  postgres:
+    image: postgres:16-alpine
+    container_name: cumplity_postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=cumplity_user
+      - POSTGRES_PASSWORD=cumplity_secure_pass_2026
+      - POSTGRES_DB=cumplity_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database_schema.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+
+  # 3. Contenedor n8n para Automatizaciones de Voz (Whisper AI)
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: cumplity_n8n
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=n8n.tudominio.com
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - NODE_ENV=production
+      - WEBHOOK_URL=https://n8n.tudominio.com/
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  postgres_data:
+  n8n_data:
