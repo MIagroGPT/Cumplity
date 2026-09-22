@@ -13,6 +13,10 @@ import {
   Layers,
   X,
   Calendar,
+  Printer,
+  FileDown,
+  Building2,
+  CheckCircle2,
 } from "lucide-react";
 
 interface CommitteeItem {
@@ -34,6 +38,7 @@ export default function CommitteesPage() {
   const [filterType, setFilterType] = useState("TODOS");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [selectedActa, setSelectedActa] = useState<CommitteeItem | null>(null);
 
   // Formulario
   const [committeeType, setCommitteeType] = useState<"COPASST" | "VIGIA" | "CONVIVENCIA">("COPASST");
@@ -96,6 +101,10 @@ export default function CommitteesPage() {
     }
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   const filtered = records.filter((r) => {
     if (filterType === "TODOS") return true;
     if (filterType === "COPASST" && (r.committeeType === "COPASST" || r.committeeType === "VIGIA")) return true;
@@ -106,7 +115,7 @@ export default function CommitteesPage() {
   return (
     <div className="space-y-6">
       {/* Encabezado */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-soft-200 p-6 sm:p-8 rounded-3xl shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-soft-200 p-6 sm:p-8 rounded-3xl shadow-sm print:hidden">
         <div>
           <div className="flex items-center gap-2 text-purple-600 text-xs font-black uppercase tracking-wider">
             <Users2 className="w-4 h-4" />
@@ -130,7 +139,7 @@ export default function CommitteesPage() {
       </div>
 
       {/* Métricas */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 print:hidden">
         <div className="bg-white border border-soft-200 p-5 rounded-3xl shadow-xs">
           <span className="text-[11px] font-bold text-slate-400 uppercase">Actas Totales</span>
           <div className="text-2xl font-black text-carbon mt-1">{stats.total || 0}</div>
@@ -151,7 +160,7 @@ export default function CommitteesPage() {
       </div>
 
       {/* Filtros */}
-      <div className="flex items-center gap-2 bg-white border border-soft-200 p-3 rounded-2xl overflow-x-auto">
+      <div className="flex items-center gap-2 bg-white border border-soft-200 p-3 rounded-2xl overflow-x-auto print:hidden">
         <Filter className="w-4 h-4 text-slate-400 ml-2 shrink-0" />
         <span className="text-xs font-bold text-slate-600 shrink-0">Comité:</span>
         {["TODOS", "COPASST", "CONVIVENCIA"].map((t) => (
@@ -170,7 +179,7 @@ export default function CommitteesPage() {
       </div>
 
       {/* Lista de Actas */}
-      <div className="space-y-3">
+      <div className="space-y-3 print:hidden">
         {filtered.length === 0 ? (
           <div className="bg-white border border-soft-200 rounded-3xl p-12 text-center text-slate-400">
             <Layers className="w-12 h-12 mx-auto mb-3 opacity-40 text-purple-600" />
@@ -219,20 +228,186 @@ export default function CommitteesPage() {
                 )}
               </div>
 
+              {/* Botón Descargar Acta PDF Oficial */}
               <div className="shrink-0 flex items-center gap-2">
-                <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-soft-100 text-slate-600 flex items-center gap-1.5">
-                  <FileText className="w-3.5 h-3.5 text-purple-600" />
-                  Acta Digital
-                </span>
+                <button
+                  onClick={() => setSelectedActa(r)}
+                  className="text-xs font-bold px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-2 transition shadow-sm"
+                >
+                  <FileDown className="w-4 h-4" />
+                  <span>Descargar Acta PDF</span>
+                </button>
               </div>
             </div>
           ))
         )}
       </div>
 
-      {/* Modal Registrar Acta */}
+      {/* MODAL / VISTA OFICIAL DE IMPRESIÓN Y DESCARGA DE ACTA PDF */}
+      {selectedActa && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-carbon/70 backdrop-blur-xs p-2 sm:p-4 overflow-y-auto print:p-0 print:bg-white print:static print:inset-auto">
+          <div className="bg-white rounded-3xl max-w-4xl w-full p-6 sm:p-10 shadow-2xl overflow-y-auto max-h-[92vh] border border-soft-200 print:border-none print:shadow-none print:max-w-none print:p-0 print:max-h-none">
+            {/* Barra de Acciones del Modal (Oculta al imprimir) */}
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-soft-200 print:hidden">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black uppercase text-purple-700 bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
+                  Vista Previa Oficial PDF
+                </span>
+                <span className="text-xs text-slate-500 font-medium">Formato Institucional MinTrabajo</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handlePrint}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-md shadow-purple-600/25 transition"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Imprimir / Guardar como PDF</span>
+                </button>
+                <button
+                  onClick={() => setSelectedActa(null)}
+                  className="p-2 text-slate-400 hover:text-carbon rounded-xl hover:bg-soft-100 transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* DOCUMENTO FORMAL: FORMATO OFICIAL DE ACTA SEGÚN MODELO SG-SST */}
+            <div className="border border-slate-900 bg-white text-slate-900 font-sans text-xs print:border-slate-900 print:text-black">
+              {/* 1. ENCABEZADO DE CONTROL DOCUMENTAL (Art. 2.2.4.6.12 Dec. 1072) */}
+              <div className="grid grid-cols-4 border-b border-slate-900 text-center">
+                <div className="p-3 border-r border-slate-900 flex flex-col justify-center items-center">
+                  <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-300 flex items-center justify-center text-slate-700 mb-1">
+                    <Building2 className="w-4 h-4" />
+                  </div>
+                  <span className="font-black text-[11px] uppercase tracking-tight">
+                    {activeCompany?.companyName || "EMPRESA CLIENTE"}
+                  </span>
+                  <span className="text-[10px] font-mono text-slate-600">NIT: {activeCompany?.nit}</span>
+                </div>
+
+                <div className="col-span-2 p-3 border-r border-slate-900 flex flex-col justify-center items-center">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-600">
+                    SISTEMA DE GESTIÓN DE SEGURIDAD Y SALUD EN EL TRABAJO (SG-SST)
+                  </span>
+                  <span className="text-sm font-black uppercase text-slate-950 mt-1">
+                    ACTA DE REUNIÓN ORDINARIA {selectedActa.committeeType}
+                  </span>
+                  <span className="text-[10px] text-slate-500 mt-0.5">
+                    Res. 2013/1986 • Res. 0312/2019 • Dec. 1072/2015
+                  </span>
+                </div>
+
+                <div className="p-2.5 text-[10px] text-left flex flex-col justify-center space-y-1 bg-slate-50 font-mono">
+                  <div><strong>CÓDIGO:</strong> FT-SST-018</div>
+                  <div><strong>VERSIÓN:</strong> 01</div>
+                  <div><strong>FECHA:</strong> 2026-01-15</div>
+                  <div><strong>PÁGINA:</strong> 1 de 1</div>
+                </div>
+              </div>
+
+              {/* 2. DATOS GENERALES DE LA SESIÓN */}
+              <div className="p-3 bg-slate-100 border-b border-slate-900 font-bold text-[11px] uppercase tracking-wide">
+                1. INFORMACIÓN GENERAL DE LA REUNIÓN
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 border-b border-slate-900 text-[11px]">
+                <div className="p-2.5 border-r border-b sm:border-b-0 border-slate-900">
+                  <span className="text-slate-500 block text-[9px] uppercase font-bold">Acta Número</span>
+                  <span className="font-black text-sm">Nº {selectedActa.meetingNumber}</span>
+                </div>
+                <div className="p-2.5 border-r border-b sm:border-b-0 border-slate-900">
+                  <span className="text-slate-500 block text-[9px] uppercase font-bold">Fecha de Sesión</span>
+                  <span className="font-bold">{formatColDate(selectedActa.meetingDate)}</span>
+                </div>
+                <div className="p-2.5 border-r border-slate-900">
+                  <span className="text-slate-500 block text-[9px] uppercase font-bold">Periodo Vigencia</span>
+                  <span className="font-bold">{selectedActa.period}</span>
+                </div>
+                <div className="p-2.5">
+                  <span className="text-slate-500 block text-[9px] uppercase font-bold">Tipo de Sesión</span>
+                  <span className="font-bold text-purple-700">Ordinaria Mensual</span>
+                </div>
+              </div>
+
+              {/* 3. MIEMBROS ASISTENTES Y QUÓRUM */}
+              <div className="p-3 bg-slate-100 border-b border-slate-900 font-bold text-[11px] uppercase tracking-wide">
+                2. ASISTENCIA Y VERIFICACIÓN DE QUÓRUM
+              </div>
+              <div className="p-3 border-b border-slate-900 text-xs leading-relaxed">
+                <p className="font-semibold text-slate-800">
+                  En la fecha y hora indicadas se reunieron los siguientes integrantes para dar inicio formal a la sesión ordinaria:
+                </p>
+                <div className="mt-2 p-2.5 bg-slate-50 rounded-lg border border-slate-300 font-medium">
+                  {selectedActa.attendees}
+                </div>
+                <div className="mt-2 text-[10px] text-slate-600 flex items-center gap-1 font-bold">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-mint-600" />
+                  Se verifica quórum deliberatorio y decisorio de acuerdo con la Resolución 2013 de 1986.
+                </div>
+              </div>
+
+              {/* 4. ORDEN DEL DÍA & TEMAS TRATADOS */}
+              <div className="p-3 bg-slate-100 border-b border-slate-900 font-bold text-[11px] uppercase tracking-wide">
+                3. ORDEN DEL DÍA Y TEMAS TRATADOS
+              </div>
+              <div className="p-4 border-b border-slate-900 text-xs leading-relaxed whitespace-pre-wrap">
+                {selectedActa.topicsDiscussed}
+              </div>
+
+              {/* 5. COMPROMISOS Y PLAN DE ACCIÓN */}
+              <div className="p-3 bg-slate-100 border-b border-slate-900 font-bold text-[11px] uppercase tracking-wide">
+                4. COMPROMISOS, TAREAS Y SEGUIMIENTO
+              </div>
+              <div className="p-4 border-b border-slate-900 text-xs leading-relaxed whitespace-pre-wrap">
+                {selectedActa.commitments || "No se registraron compromisos pendientes para el periodo."}
+              </div>
+
+              {/* 6. REGISTRO Y ESPACIOS FORMALES DE FIRMAS */}
+              <div className="p-3 bg-slate-100 border-b border-slate-900 font-bold text-[11px] uppercase tracking-wide">
+                5. CONSTANCIA Y REGISTRO DE FIRMAS DE CONFORMIDAD
+              </div>
+              <div className="p-6 grid grid-cols-2 gap-8 text-[11px]">
+                {/* Firma 1: Presidente */}
+                <div className="pt-10 border-t border-slate-900 text-center">
+                  <div className="font-black text-xs uppercase">PRESIDENTE DEL {selectedActa.committeeType}</div>
+                  <div className="text-[10px] text-slate-600 mt-1">Nombre: _____________________________________</div>
+                  <div className="text-[10px] text-slate-600">C.C. Nº: ______________________________________</div>
+                </div>
+
+                {/* Firma 2: Secretario */}
+                <div className="pt-10 border-t border-slate-900 text-center">
+                  <div className="font-black text-xs uppercase">SECRETARIO(A) DEL {selectedActa.committeeType}</div>
+                  <div className="text-[10px] text-slate-600 mt-1">Nombre: _____________________________________</div>
+                  <div className="text-[10px] text-slate-600">C.C. Nº: ______________________________________</div>
+                </div>
+
+                {/* Firma 3: Representante Empleador */}
+                <div className="pt-10 border-t border-slate-900 text-center mt-4">
+                  <div className="font-black text-xs uppercase">REPRESENTANTE DEL EMPLEADOR</div>
+                  <div className="text-[10px] text-slate-600 mt-1">Nombre: _____________________________________</div>
+                  <div className="text-[10px] text-slate-600">C.C. Nº: ______________________________________</div>
+                </div>
+
+                {/* Firma 4: Representante Trabajadores */}
+                <div className="pt-10 border-t border-slate-900 text-center mt-4">
+                  <div className="font-black text-xs uppercase">REPRESENTANTE DE LOS TRABAJADORES</div>
+                  <div className="text-[10px] text-slate-600 mt-1">Nombre: _____________________________________</div>
+                  <div className="text-[10px] text-slate-600">C.C. Nº: ______________________________________</div>
+                </div>
+              </div>
+
+              {/* Pie de Página Legal */}
+              <div className="p-2 border-t border-slate-900 bg-slate-50 text-[9px] text-center text-slate-500">
+                Documento oficial del SG-SST. Sujeto a retención legal de 20 años según el Artículo 2.2.4.6.13 del Decreto 1072 de 2015.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Registrar Nueva Acta */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-carbon/60 backdrop-blur-xs p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-carbon/60 backdrop-blur-xs p-4 overflow-y-auto print:hidden">
           <div className="bg-white border border-soft-200 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between pb-4 border-b border-soft-200">
               <div className="flex items-center gap-3">
@@ -294,7 +469,7 @@ export default function CommitteesPage() {
                 <input
                   type="text"
                   required
-                  placeholder="Ej: Carolina Méndez (Presidente), Carlos Ruiz (Secretario), Jorge Morales"
+                  placeholder="Ej: Carolina Betancourt y clara salazar"
                   value={attendees}
                   onChange={(e) => setAttendees(e.target.value)}
                   className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-soft-300 bg-white text-carbon focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium"
