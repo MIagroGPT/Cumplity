@@ -3,12 +3,16 @@ import { prisma } from "@/lib/db";
 
 export async function GET() {
   try {
-    const consultant = await prisma.consultant.findFirst();
+    let consultant = await prisma.consultant.findFirst();
     if (!consultant) {
-      return NextResponse.json(
-        { error: "No hay consultor registrado" },
-        { status: 404 }
-      );
+      consultant = await prisma.consultant.create({
+        data: {
+          fullName: "Dra. Carolina Méndez Silva",
+          licenseNumber: "SST-LIC-2024-88910",
+          email: "consultor@cumplity.com",
+          password: "admin",
+        },
+      });
     }
     return NextResponse.json({
       consultant: {

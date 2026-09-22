@@ -85,9 +85,16 @@ export async function POST(req: Request) {
       );
     }
 
-    const consultant = await prisma.consultant.findFirst();
+    let consultant = await prisma.consultant.findFirst();
     if (!consultant) {
-      return NextResponse.json({ error: "No hay consultor configurado" }, { status: 400 });
+      consultant = await prisma.consultant.create({
+        data: {
+          fullName: "Dra. Carolina Méndez Silva",
+          licenseNumber: "SST-LIC-2024-88910",
+          email: "consultor@cumplity.com",
+          password: "admin",
+        },
+      });
     }
 
     // Regla legal estricta de la Resolución 0312 de 2019:
