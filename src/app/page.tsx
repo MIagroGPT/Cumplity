@@ -20,6 +20,9 @@ import {
   TrendingUp,
   FileCheck,
   ChevronRight,
+  CalendarDays,
+  Activity,
+  ClipboardCheck,
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -310,14 +313,15 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Grid de Métricas Clave */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Grid de Métricas Clave del Ciclo PHVA */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {/* 1. Contexto: Trabajadores */}
         <Link
           href="/workers"
           className="p-5 rounded-3xl bg-white border border-soft-200 hover:border-purple-300 hover:shadow-md transition shadow-sm group"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500">Trabajadores</span>
+            <span className="text-xs font-bold text-slate-500">Personal</span>
             <div className="w-8 h-8 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
               <Users className="w-4 h-4" />
             </div>
@@ -325,9 +329,27 @@ export default function DashboardPage() {
           <div className="text-2xl font-black text-carbon mt-2">
             {activeCompany.workerCount}
           </div>
-          <p className="text-[10px] text-slate-500 font-medium mt-1">Res. 1843/2025 Salud</p>
+          <p className="text-[10px] text-slate-500 font-medium mt-1">Sociodemográfico</p>
         </Link>
 
+        {/* 2. Planear: Plan de Trabajo Anual */}
+        <Link
+          href="/workplan"
+          className="p-5 rounded-3xl bg-white border border-soft-200 hover:border-purple-300 hover:shadow-md transition shadow-sm group"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500">Plan PTA</span>
+            <div className="w-8 h-8 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
+              <CalendarDays className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-purple-700 mt-2">
+            2026
+          </div>
+          <p className="text-[10px] text-purple-600 font-bold mt-1">Cronograma Anual</p>
+        </Link>
+
+        {/* 3. Hacer: Matriz GTC 45 */}
         <Link
           href="/gtc45"
           className="p-5 rounded-3xl bg-white border border-soft-200 hover:border-purple-300 hover:shadow-md transition shadow-sm group"
@@ -342,40 +364,59 @@ export default function DashboardPage() {
             {dashboardData?.findings?.length || 0}
           </div>
           <p className="text-[10px] text-purple-600 font-bold mt-1">
-            {dashboardData?.findings?.filter((f) => f.status === "OPEN").length || 0} Hallazgos abiertos
+            {dashboardData?.findings?.filter((f) => f.status === "OPEN").length || 0} Abiertos
           </p>
         </Link>
 
+        {/* 4. Hacer: Inspecciones */}
         <Link
-          href="/vault"
+          href="/inspections"
           className="p-5 rounded-3xl bg-white border border-soft-200 hover:border-purple-300 hover:shadow-md transition shadow-sm group"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500">Bóveda 20 Años</span>
-            <div className="w-8 h-8 rounded-xl bg-soft-100 flex items-center justify-center text-carbon group-hover:scale-110 transition-transform">
-              <FolderLock className="w-4 h-4" />
+            <span className="text-xs font-bold text-slate-500">Inspecciones</span>
+            <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
+              <ClipboardCheck className="w-4 h-4" />
             </div>
           </div>
           <div className="text-2xl font-black text-carbon mt-2">
-            {dashboardData?.documents?.length || 0}
+            Preop.
           </div>
-          <p className="text-[10px] text-slate-500 font-medium mt-1">Art. 2.2.4.6.13 Dec. 1072</p>
+          <p className="text-[10px] text-amber-800 font-bold mt-1">Equipos & Áreas</p>
         </Link>
 
+        {/* 5. Verificar: Indicadores Dec. 1072 */}
         <Link
-          href="/accidents"
+          href="/indicators"
           className="p-5 rounded-3xl bg-white border border-soft-200 hover:border-purple-300 hover:shadow-md transition shadow-sm group"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500">Investigación AT</span>
-            <div className="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600 group-hover:scale-110 transition-transform">
-              <Flame className="w-4 h-4" />
+            <span className="text-xs font-bold text-slate-500">Indicadores</span>
+            <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+              <Activity className="w-4 h-4" />
             </div>
           </div>
           <div className="text-2xl font-black text-carbon mt-2">
-            {dashboardData?.accidents?.length || 0}
+            Dec. 1072
           </div>
-          <p className="text-[10px] text-rose-600 font-bold mt-1">Término 15 días hábiles</p>
+          <p className="text-[10px] text-blue-700 font-bold mt-1">IF, IS, Ausentismo</p>
+        </Link>
+
+        {/* 6. Actuar: Matriz ACPM */}
+        <Link
+          href="/acpm"
+          className="p-5 rounded-3xl bg-white border border-soft-200 hover:border-purple-300 hover:shadow-md transition shadow-sm group"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500">Matriz ACPM</span>
+            <div className="w-8 h-8 rounded-xl bg-mint-50 flex items-center justify-center text-mint-600 group-hover:scale-110 transition-transform">
+              <TrendingUp className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-mint-600 mt-2">
+            Mejora
+          </div>
+          <p className="text-[10px] text-mint-700 font-bold mt-1">Planes de Acción</p>
         </Link>
       </div>
 

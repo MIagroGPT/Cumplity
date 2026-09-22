@@ -36,6 +36,12 @@ model Company {
   gtc45Findings       Gtc45Finding[]
   vaultDocuments      VaultDocument[]
   accidentAlerts      AccidentInvestigation[]
+  annualWorkPlans     AnnualWorkPlan[]
+  improvementActions  ImprovementAction[]
+  indicatorRecords    IndicatorRecord[]
+  safetyInspections   SafetyInspection[]
+  committeeRecords    CommitteeRecord[]
+  contractorRecords   ContractorRecord[]
 
   @@map("companies")
 }
@@ -121,4 +127,125 @@ model AccidentInvestigation {
   createdAt     DateTime @default(now())
 
   @@map("accident_investigations")
+}
+
+// 1. Plan de Trabajo Anual (2.6 Planear - Res. 0312 / Dec. 1072)
+model AnnualWorkPlan {
+  id              String   @id @default(uuid())
+  companyId       String
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  activityName    String
+  phvaCycle       String   // PLANEAR, HACER, VERIFICAR, ACTUAR
+  objective       String?
+  responsible     String
+  resources       String?
+  targetPercent   Float    @default(100)
+  executedPercent Float    @default(0)
+  plannedMonths   String   // ej: "ENE,FEB,MAR"
+  executedMonths  String?
+  status          String   @default("PROGRAMADA") // PROGRAMADA, EN_PROCESO, EJECUTADA, CANCELADA
+  evidenceNotes   String?
+  year            Int      @default(2026)
+  createdAt       DateTime @default(now())
+
+  @@map("annual_work_plans")
+}
+
+// 2. Matriz de Mejoras ACPM (5. Actuar - Matriz de Mejoras ACPM.xlsm)
+model ImprovementAction {
+  id                 String    @id @default(uuid())
+  companyId          String
+  company            Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  actionType         String    @default("CORRECTIVA") // CORRECTIVA, PREVENTIVA, MEJORA
+  source             String    // INSPECCIÓN, AUDITORÍA, INVESTIGACIÓN_AT, COPASST, REVISIÓN_DIRECCIÓN, AUTOEVALUACIÓN
+  findingDescription String
+  rootCause          String?
+  riskFactor         String?   // MECÁNICO, FÍSICO, QUÍMICO, LOCATIVO, BIOMECÁNICO, PSICOSOCIAL, ELÉCTRICO, TRÁNSITO
+  actionPlan         String
+  responsible        String
+  plannedDate        DateTime
+  priority           String    @default("MEDIA") // ALTA, MEDIA, BAJA
+  resources          String?   // TÉCNICOS, HUMANOS, FINANCIEROS
+  evidenceUrl        String?
+  evidenceNotes      String?
+  status             String    @default("EN_PROCESO") // EN_PROCESO, EJECUTADO, NO_REALIZADO, CANCELADO
+  efficacy           String    @default("PENDIENTE") // EFICAZ, NO_EFICAZ, PENDIENTE
+  followUpDate       DateTime?
+  createdAt          DateTime  @default(now())
+
+  @@map("improvement_actions")
+}
+
+// 3. Indicadores del SG-SST (4.3 Verificar - Art. 2.2.4.6.20 Dec. 1072)
+model IndicatorRecord {
+  id            String   @id @default(uuid())
+  companyId     String
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  indicatorType String   // ESTRUCTURA, PROCESO, RESULTADO
+  indicatorCode String   // IF_AT, IS_AT, ILI, AUSENTISMO, CUMP_PTA, EJEC_PRESUPUESTO, CAPACITACION
+  indicatorName String
+  period        String   // MENSUAL, TRIMESTRAL, ANUAL
+  year          Int      @default(2026)
+  targetValue   Float
+  actualValue   Float
+  numerator     Float?
+  denominator   Float?
+  analysis      String?
+  createdAt     DateTime @default(now())
+
+  @@map("indicator_records")
+}
+
+// 4. Inspecciones y Preoperacionales (3.8 Hacer - Preoperacionales.xlsx, ATS)
+model SafetyInspection {
+  id                String   @id @default(uuid())
+  companyId         String
+  company           Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  inspectionType    String   // LOCATIVA, PREOPERACIONAL, EXTINTORES, BOTIQUIN, CAMILLAS, EPP, ATS
+  equipmentOrArea   String
+  inspectorName     String
+  inspectionDate    DateTime @default(now())
+  status            String   @default("CONFORME") // CONFORME, NO_CONFORME, CRITICO
+  findingsCount     Int      @default(0)
+  observations      String?
+  correctiveAction  String?
+  createdAt         DateTime @default(now())
+
+  @@map("safety_inspections")
+}
+
+// 5. Comités COPASST / Vigía y CCL (3.3 y 3.4 Hacer)
+model CommitteeRecord {
+  id              String   @id @default(uuid())
+  companyId       String
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  committeeType   String   // COPASST, VIGIA, CONVIVENCIA
+  period          String
+  meetingNumber   Int
+  meetingDate     DateTime
+  attendees       String
+  topicsDiscussed String
+  commitments     String
+  actaUrl         String?
+  createdAt       DateTime @default(now())
+
+  @@map("committee_records")
+}
+
+// 6. Contratistas y Proveedores (3.9 Hacer - Seguimiento a Contratistas.xlsx)
+model ContractorRecord {
+  id                  String   @id @default(uuid())
+  companyId           String
+  company             Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyName         String
+  nit                 String
+  serviceType         String
+  arlAffiliation      Boolean  @default(true)
+  ssComplianceStatus  String   @default("AL_DIA") // AL_DIA, PENDIENTE, NO_CUMPLE
+  evaluationScore     Float?
+  contactPhone        String?
+  notes               String?
+  createdAt           DateTime @default(now())
+
+  @@map("contractor_records")
 }

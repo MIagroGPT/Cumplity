@@ -29,3 +29,10 @@ yarn-error.log*
 .DS_Store
 *.pem
 Thumbs.db
+
+# Carpeta de referencia y videos pesados
+MODELO/
+*.mp4
+*.mov
+*.avi
+*.wmv
